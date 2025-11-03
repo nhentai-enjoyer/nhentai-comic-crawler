@@ -19,6 +19,7 @@ export const DefaultHeader = {
 enum ImageFormat {
   Png = "p",
   Jpg = "j",
+  webp = "w",
   Gif = "g",
 }
 
@@ -101,22 +102,24 @@ export class Doujin {
       spinner.text = `${counter}. ${chalk.cyanBright(
         `[${+index + 1}/${this.num_pages}]`
       )} ${chalk.yellowBright(this.id)} ${this.title.pretty}`;
-
       const page = this.images.pages[index];
       const extension =
         page.t == ImageFormat.Png
           ? "png"
           : page.t == ImageFormat.Jpg
-          ? "jpg"
-          : "gif";
+            ? "jpg"
+            : page.t == ImageFormat.webp ? "t.webp"
+              : "gif";
 
-      const url = `https://i3.nhentai.net/galleries/${this.media_id}/${
-        +index + 1
-      }.${extension}`;
+      let url = `https://i3.nhentai.net/galleries/${this.media_id}/${+index + 1
+        }.${extension}`;
+      if (extension == "t.webp") {
+        url = `https://t.nhentai.net/galleries/${this.media_id}/${+index + 1
+          }${extension}`;
+      }
 
       const filename = `${+index + 1}.${extension}`;
       const file = join(folderPath, filename);
-
       if (existsSync(file)) continue;
 
       await saveImage(url, file).catch((e) => {
@@ -170,7 +173,6 @@ export async function doujinAPI(id: string | number): Promise<Doujin> {
       ...DefaultHeader,
     },
   });
-
   return new Doujin(response.data);
 }
 
